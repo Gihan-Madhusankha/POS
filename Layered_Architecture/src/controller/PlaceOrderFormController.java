@@ -400,7 +400,7 @@ public class PlaceOrderFormController {
         return false;
     }
 
-
+    // find item
     public ItemDTO findItem(String code) {
         try {
             Connection connection = DBConnection.getDbConnection().getConnection();
