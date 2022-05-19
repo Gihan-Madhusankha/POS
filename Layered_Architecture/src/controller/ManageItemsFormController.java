@@ -1,9 +1,9 @@
 package controller;
 
+import bo.custom.ItemBO;
+import bo.custom.impl.ItemBOImpl;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
-import dao.CrudDAO;
-import dao.ItemDAOImpl;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -31,7 +31,7 @@ import java.util.ArrayList;
  **/
 
 public class ManageItemsFormController {
-    private final CrudDAO<ItemDTO, String> crudDAO = new ItemDAOImpl();
+    private final ItemBO itemBO = new ItemBOImpl();
     public AnchorPane root;
     public JFXTextField txtCode;
     public JFXTextField txtDescription;
@@ -76,7 +76,7 @@ public class ManageItemsFormController {
         tblItems.getItems().clear();
         try {
 
-            ArrayList<ItemDTO> allItems = crudDAO.getAll();
+            ArrayList<ItemDTO> allItems = itemBO.getAllItems();
 
             for (ItemDTO rst : allItems) {
                 tblItems.getItems().add(new ItemTM(rst.getCode(), rst.getDescription(), rst.getUnitPrice(), rst.getQtyOnHand()));
@@ -138,9 +138,7 @@ public class ManageItemsFormController {
                 new Alert(Alert.AlertType.ERROR, "There is no such item associated with the id " + code).show();
             }
 
-            boolean b = crudDAO.delete(code);
-
-            if (b) {
+            if (itemBO.deleteItem(code)) {
                 tblItems.getItems().remove(tblItems.getSelectionModel().getSelectedItem());
                 tblItems.getSelectionModel().clearSelection();
                 initUI();
@@ -181,7 +179,8 @@ public class ManageItemsFormController {
                     new Alert(Alert.AlertType.ERROR, code + " already exists").show();
                 }
 
-                boolean b = crudDAO.save(new ItemDTO(code, description, unitPrice, qtyOnHand));
+                boolean b = itemBO.saveItem(new ItemDTO(code, description, unitPrice, qtyOnHand));
+
                 if (b) {
                     tblItems.getItems().add(new ItemTM(code, description, unitPrice, qtyOnHand));
                 }
@@ -199,7 +198,7 @@ public class ManageItemsFormController {
                 }
                 /*Update Item*/
 
-                boolean b = crudDAO.update(new ItemDTO(code, description, unitPrice, qtyOnHand));
+                boolean b = itemBO.updateItem((new ItemDTO(code, description, unitPrice, qtyOnHand)));
                 if (b) {
                     ItemTM selectedItem = tblItems.getSelectionModel().getSelectedItem();
                     selectedItem.setDescription(description);
@@ -220,13 +219,13 @@ public class ManageItemsFormController {
 
 
     private boolean existItem(String code) throws SQLException, ClassNotFoundException {
-        return crudDAO.exist(code);
+        return itemBO.itemExist(code);
     }
 
 
     private String generateNewId() {
         try {
-            return crudDAO.generateNewID();
+           return itemBO.generateNewItemID();
 
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, e.getMessage()).show();

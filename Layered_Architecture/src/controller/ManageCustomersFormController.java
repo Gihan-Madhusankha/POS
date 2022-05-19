@@ -1,9 +1,9 @@
 package controller;
 
+import bo.custom.CustomerBO;
+import bo.custom.impl.CustomerBOImpl;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
-import dao.CrudDAO;
-import dao.CustomerDAOImpl;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -32,7 +32,7 @@ import java.util.List;
  **/
 
 public class ManageCustomersFormController {
-    private final CrudDAO<CustomerDTO, String> crudDAO = new CustomerDAOImpl();
+    private final CustomerBO customerBO = new CustomerBOImpl();
     public AnchorPane root;
     public JFXTextField txtCustomerName;
     public JFXTextField txtCustomerId;
@@ -74,7 +74,7 @@ public class ManageCustomersFormController {
         /*Get all customers*/
 
         try {
-            ArrayList<CustomerDTO> allCustomers = crudDAO.getAll();
+            ArrayList<CustomerDTO> allCustomers = customerBO.getAllCustomers();
 
             for (CustomerDTO rst : allCustomers) {
                 tblCustomers.getItems().add(new CustomerTM(rst.getId(), rst.getName(), rst.getAddress()));
@@ -83,7 +83,6 @@ public class ManageCustomersFormController {
         } catch (SQLException | ClassNotFoundException e) {
             new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
         }
-
 
     }
 
@@ -147,7 +146,7 @@ public class ManageCustomersFormController {
                     new Alert(Alert.AlertType.ERROR, id + " already exists").show();
                 }
 
-                if (crudDAO.save(new CustomerDTO(id, name, address))) {
+                if (customerBO.saveCustomer(new CustomerDTO(id, name, address))) {
                     tblCustomers.getItems().add(new CustomerTM(id, name, address));
                 } else {
                     new Alert(Alert.AlertType.WARNING, "Something went wrong...").show();
@@ -160,15 +159,13 @@ public class ManageCustomersFormController {
                 e.printStackTrace();
             }
 
-
         } else {
             /*Update customer*/
             try {
                 if (!existCustomer(id)) {
                     new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + id).show();
                 }
-
-                crudDAO.update(new CustomerDTO(id, name, address));
+                customerBO.updateCustomer(new CustomerDTO(id, name, address));
 
             } catch (SQLException e) {
                 new Alert(Alert.AlertType.ERROR, "Failed to update the customer " + id + e.getMessage()).show();
@@ -181,15 +178,13 @@ public class ManageCustomersFormController {
             selectedCustomer.setAddress(address);
             tblCustomers.refresh();
         }
-
         btnAddNewCustomer.fire();
     }
 
 
     boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
-        return crudDAO.exist(id);
+        return customerBO.customerExist(id);
     }
-
 
     public void btnDelete_OnAction(ActionEvent actionEvent) {
         /*Delete Customer*/
@@ -198,8 +193,8 @@ public class ManageCustomersFormController {
             if (!existCustomer(id)) {
                 new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + id).show();
             }
-            crudDAO.delete(id);
 
+            customerBO.deleteCustomer(id);
             tblCustomers.getItems().remove(tblCustomers.getSelectionModel().getSelectedItem());
             tblCustomers.getSelectionModel().clearSelection();
             initUI();
@@ -213,14 +208,13 @@ public class ManageCustomersFormController {
 
     private String generateNewId() {
         try {
-            return crudDAO.generateNewID();
+            return customerBO.generateNewCustomerID();
 
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, "Failed to generate a new id " + e.getMessage()).show();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-
 
         if (tblCustomers.getItems().isEmpty()) {
             return "C00-001";
@@ -229,7 +223,6 @@ public class ManageCustomersFormController {
             int newCustomerId = Integer.parseInt(id.replace("C", "")) + 1;
             return String.format("C00-%03d", newCustomerId);
         }
-
     }
 
     private String getLastCustomerId() {

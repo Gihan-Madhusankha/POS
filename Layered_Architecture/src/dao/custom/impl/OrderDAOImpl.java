@@ -1,5 +1,7 @@
-package dao;
+package dao.custom.impl;
 
+import dao.SQLUtil;
+import dao.custom.OrderDAO;
 import model.OrderDTO;
 
 import java.sql.ResultSet;
@@ -10,7 +12,7 @@ import java.util.ArrayList;
  * @author : Sanu Vithanage
  * @since : 0.1.0
  **/
-public class OrderDAOImpl implements CrudDAO<OrderDTO, String> {
+public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public ArrayList<OrderDTO> getAll() throws SQLException, ClassNotFoundException {
